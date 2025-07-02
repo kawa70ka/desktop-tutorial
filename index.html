@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>テキスト整理ツール</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #495057;
+            margin-bottom: 20px;
+        }
+        .input-section {
+            margin-bottom: 20px;
+            border: 1px solid #e0e0e0;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #fdfdfd;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+            resize: vertical;
+            height: 150px; /* 各入力欄の高さ */
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        /* Removed label styles as labels are removed from input sections */
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>テキスト整理ツール</h1>
+
+        <div id="inputSectionsContainer">
+            <!-- Input sections will be generated here by JavaScript -->
+        </div>
+
+        <button id="processButton">整理する</button>
+
+        <label for="outputText">出力欄（クリックしてコピー）</label>
+        <textarea id="outputText" readonly placeholder="整理されたテキストがここに表示されます..."></textarea>
+    </div>
+
+    <script>
+        const personLabels = [
+            'Aさん', 'Bさん', 'Cさん', 'Dさん', 'Eさん',
+            'Fさん', 'Gさん', 'Hさん', 'Iさん', 'Jさん',
+            'Kさん', 'Lさん', 'Mさん', 'Nさん', 'Oさん'
+        ];
+
+        // Generate input sections dynamically
+        const inputSectionsContainer = document.getElementById('inputSectionsContainer');
+        personLabels.forEach((label, index) => {
+            const sectionDiv = document.createElement('div');
+            sectionDiv.className = 'input-section';
+
+            const nameInputId = `nameInput${String.fromCharCode(65 + index)}`;
+            const textareaId = `inputText${String.fromCharCode(65 + index)}`;
+
+            const nameInput = document.createElement('input');
+            nameInput.type = 'text';
+            nameInput.id = nameInputId;
+            nameInput.placeholder = `${label}の名前を入力してください`;
+            nameInput.value = label; // Default value
+
+            const textarea = document.createElement('textarea');
+            textarea.id = textareaId;
+            textarea.placeholder = `ここに${label}のテキストを貼り付けてください...`;
+
+            sectionDiv.appendChild(nameInput);
+            sectionDiv.appendChild(textarea);
+            inputSectionsContainer.appendChild(sectionDiv);
+        });
+
+        document.getElementById('processButton').addEventListener('click', organizeText);
+        document.getElementById('outputText').addEventListener('click', (e) => {
+            e.target.select();
+            document.execCommand('copy');
+            alert('出力結果をコピーしました。');
+        });
+
+        function formatName(rawName) {
+            let name = rawName.trim(); // Start with trimmed name
+
+            // If the rawName starts with '#', it's likely a comment, not a name.
+            if (name.startsWith('#')) {
+                return '';
+            }
+
+            // Aggressively remove common Slack artifacts and timestamps
+            name = name.replace(/^New\s+/, ''); // "New " prefix
+            // More robust timestamp removal: HH:MM, HH:MM Date, Date HH:MM
+            name = name.replace(/\s+\d{1,2}:\d{2}(?:\s+\d{1,2}\/\d{1,2})?.*$/, '');
+            name = name.replace(/\s+\d{1,2}\/\d{1,2}\s+\d{1,2}:\d{2}.*$/, '');
+
+            name = name.replace(/\s*\(編集済み\).*$/, ''); // "(編集済み)"
+            name = name.replace(/\s*\d+\s*件の返信.*$/, ''); // "X 件の返信"
+            name = name.replace(/\s*今日\s+\d{1,2}:\d{2}.*$/, ''); // "今日 HH:MM"
+            name = name.replace(/\s*スレッドを表示する.*$/, ''); // "スレッドを表示する"
+            name = name.replace(/:\w+:/g, ''); // Emojis like :check_mark:
+            name = name.replace(/\s+\d+$/, ''); // Trailing numbers like '1' (message count)
+
+            name = name.trim(); // Trim again after removing artifacts
+
+            // If after cleaning, the string is empty or consists only of non-Japanese/non-alphanumeric characters
+            // or looks like a timestamp (e.g., "13:17" or "6/22")
+            if (!name || /^[0-9\s\/:.,!@#$%^&*()_=\[\]{};'"\\|,.<>/?`~]+$/.test(name) || /^\d{1,2}:\d{2}$/.test(name) || /^\d{1,2}\/\d{1,2}$/.test(name)) {
+                return ''; // Not a valid name
+            }
+
+            // Specific handling for "チーム" and "テンポ" if they are the primary identifier
+            if (name === 'チーム' || name === 'テンポ') {
+                return name;
+            }
+
+            // Try to extract a likely Japanese name (Kanji, Hiragana, Katakana) at the beginning
+            // This regex captures a sequence of Japanese characters and spaces.
+            const japaneseNameMatch = name.match(/^[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF\s]+/);
+            if (japaneseNameMatch && japaneseNameMatch[0].trim().length > 0) {
+                let extractedName = japaneseNameMatch[0].trim();
+                // Remove common trailing words that are not part of a person's name
+                const trailingWordsToRemove = ['vs立教', 'セルフレビューRG', 'Y', 'センター', '左右タックル'];
+                for (const word of trailingWordsToRemove) {
+                    if (extractedName.endsWith(word)) {
+                        extractedName = extractedName.substring(0, extractedName.length - word.length).trim();
+                    }
+                }
+                return extractedName;
+            }
+
+            // Fallback: if it's not a Japanese name, but not a timestamp/artifact, return it as is.
+            // This might catch English names or other valid identifiers.
+            return name;
+        }
+
+        function organizeText() {
+            const commentsByNumber = {};
+
+            personLabels.forEach((label, index) => {
+                const nameInputId = `nameInput${String.fromCharCode(65 + index)}`;
+                const textareaId = `inputText${String.fromCharCode(65 + index)}`;
+
+                const personName = document.getElementById(nameInputId).value.trim();
+                const inputText = document.getElementById(textareaId).value;
+                const lines = inputText.split('\n');
+
+                let currentNameForThisInput = personName; // Use the name from the input field as the default
+
+                lines.forEach(line => {
+                    const trimmedLine = line.trim();
+                    // Skip empty lines or lines with specific Slack artifacts
+                    if (!trimmedLine || trimmedLine.includes('（編集済み）') || trimmedLine.includes('件の返信') || trimmedLine.includes('スレッドを表示する')) {
+                        return;
+                    }
+
+                    // Check if the line starts with a #comment
+                    const commentMatchAtStart = trimmedLine.match(/^#(\d+)\s*(.*)/);
+
+                    if (commentMatchAtStart) {
+                        // This is a comment line starting with #
+                        const number = parseInt(commentMatchAtStart[1], 10);
+                        const text = commentMatchAtStart[2].trim();
+
+                        if (text) {
+                            if (!commentsByNumber[number]) {
+                                commentsByNumber[number] = [];
+                            }
+                            commentsByNumber[number].push({
+                                name: currentNameForThisInput, // Use the name from the input field
+                                text: text
+                            });
+                        }
+                    } else {
+                        // This line does not start with #. It might be a name update or just text.
+                        // Try to extract a name from this line. If successful, it overrides the default for this input field.
+                        const potentialName = formatName(trimmedLine);
+                        if (potentialName) {
+                            currentNameForThisInput = potentialName; 
+                        }
+                        // If it's not a comment and not a valid name, ignore it (as per requirement)
+                    }
+                });
+            });
+
+            // 結果を整形して出力
+            const sortedKeys = Object.keys(commentsByNumber).sort((a, b) => a - b);
+            let outputText = '';
+            sortedKeys.forEach((key, index) => {
+                if (index > 0) {
+                    outputText += '\n';
+                }
+                outputText += `＃${key}\n`;
+                commentsByNumber[key].forEach(entry => {
+                    // Ensure displayName is not empty before adding to output
+                    const displayName = entry.name ? entry.name : '不明な名前'; // Fallback for empty name
+                    outputText += `${displayName}：${entry.text}\n`;
+                });
+            });
+
+            document.getElementById('outputText').value = outputText;
+        }
+    </script>
+
+</body>
+</html>
