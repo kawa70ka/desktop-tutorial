@@ -21,6 +21,12 @@
             overflow-y: scroll;
             white-space: pre-wrap; /* 改行をそのまま表示 */
         }
+        #output {
+            cursor: pointer;
+        }
+        #output:hover {
+            background-color: #f0f0f0;
+        }
         /* ドラッグ中のスタイル */
         .drag-over {
             border-style: dashed;
@@ -38,11 +44,30 @@
     <p>ここに文字起こしファイル（.vtt, .txt）をドラッグ＆ドロップするか、テキストを貼り付けてください。</p>
     <div id="container">
         <textarea id="input" placeholder="ここに文字起こしデータを貼り付け"></textarea>
-        <div id="output"></div>
+        <div id="output" onclick="copyOutput()"></div>
     </div>
     <button onclick="formatTranscript()">整形する</button>
+    <div id="copy-notification" style="position: fixed; bottom: 20px; right: 20px; background-color: #333; color: white; padding: 10px; border-radius: 5px; display: none;">コピーしました！</div>
 
 <script>
+    function copyOutput() {
+        const outputElement = document.getElementById('output');
+        const textToCopy = outputElement.innerText;
+
+        if (!textToCopy) return;
+
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            const notification = document.getElementById('copy-notification');
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 2000);
+        }).catch(err => {
+            console.error('クリップボードへのコピーに失敗しました: ', err);
+            alert('コピーに失敗しました。');
+        });
+    }
+
     function formatTranscript() {
         const input = document.getElementById('input').value;
         const lines = input.split('\n');
