@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文字起こし整形ツール</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+        }
+        #container {
+            display: flex;
+            gap: 20px;
+        }
+        #input, #output {
+            width: 50%;
+            height: 500px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            overflow-y: scroll;
+            white-space: pre-wrap; /* 改行をそのまま表示 */
+        }
+        /* ドラッグ中のスタイル */
+        .drag-over {
+            border-style: dashed;
+            border-color: royalblue;
+            background-color: #f0f8ff;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>文字起こし整形ツール</h1>
+    <p>ここに文字起こしファイル（.vtt, .txt）をドラッグ＆ドロップするか、テキストを貼り付けてください。</p>
+    <div id="container">
+        <textarea id="input" placeholder="ここに文字起こしデータを貼り付け"></textarea>
+        <div id="output"></div>
+    </div>
+    <button onclick="formatTranscript()">整形する</button>
+
+<script>
+    function formatTranscript() {
+        const input = document.getElementById('input').value;
+        const lines = input.split('\n');
+        let output = '';
+        let currentSpeaker = '';
+        let currentTranscript = [];
+
+        for (const line of lines) {
+            if (line.includes('-->') || /^\d+$/.test(line.trim()) || line.trim() === 'WEBVTT' || line.trim() === '') {
+                continue;
+            }
+
+            const speakerMatch = line.match(/^([^:]+):(.*)/);
+            if (speakerMatch) {
+                const speaker = speakerMatch[1].trim();
+                const transcript = speakerMatch[2].trim();
+
+                if (currentSpeaker && speaker !== currentSpeaker) {
+                    if (currentTranscript.length > 0) {
+                        output += `<strong>${currentSpeaker}:</strong><br>${currentTranscript.join(' ').replace(/。/g, '。<br>')}<br><br>`;
+                    }
+                    currentTranscript = [];
+                }
+                
+                currentSpeaker = speaker;
+                if(transcript) currentTranscript.push(transcript);
+
+            } else {
+                if (currentSpeaker && line.trim()) {
+                    currentTranscript.push(line.trim());
+                }
+            }
+        }
+
+        if (currentSpeaker && currentTranscript.length > 0) {
+            output += `<strong>${currentSpeaker}:</strong><br>${currentTranscript.join(' ').replace(/。/g, '。<br>')}<br><br>`;
+        }
+
+        document.getElementById('output').innerHTML = output;
+    }
+
+    // --- Drag and Drop functionality ---
+    const dropZone = document.body;
+    const inputArea = document.getElementById('input');
+
+    dropZone.addEventListener('dragover', (event) => {
+        event.stopPropagation();
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'copy';
+        inputArea.classList.add('drag-over');
+    });
+
+    dropZone.addEventListener('dragleave', (event) => {
+        inputArea.classList.remove('drag-over');
+    });
+
+    dropZone.addEventListener('drop', (event) => {
+        event.stopPropagation();
+        event.preventDefault();
+        inputArea.classList.remove('drag-over');
+
+        const files = event.dataTransfer.files;
+        if (files.length > 0) {
+            const file = files[0];
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                inputArea.value = e.target.result;
+                formatTranscript(); // Automatically format after dropping
+            };
+
+            reader.readAsText(file);
+        }
+    });
+
+</script>
+
+</body>
+</html>
