@@ -168,9 +168,11 @@
         <label for="inputRawText"><i class="fas fa-stream"></i> レビューテキスト入力</label>
         <p class="description">
             Slackなどからコピーした生のレビューテキストを貼り付けて「整理を実行」ボタンを押してください。<br>
-            タイムスタンプ等の不要な情報を削除し、キーワード（チーム、テンポ等）を正規化し、#番号ごとにコメントをグループ化して出力します。<br>
-            <b>入力例：</b>
-            <pre style="background-color: rgba(0,0,0,0.3); padding: 10px; border-radius: 5px; white-space: pre-wrap;">山田 太郎 14:20
+            タイムスタンプ等の不要な情報を削除し、キーワード（チーム、テンポ等）を正規化し、#番号ごとにコメントをグループ化して出力します。
+        </p>
+
+        <b>入力例：</b>
+        <pre style="background-color: #f8f9fa; padding: 10px; border-radius: 5px; white-space: pre-wrap; border: 1px solid #dddddd; margin-top: 0.5rem; margin-bottom: 1.5rem;">山田 太郎 14:20
 #1 今のプレー、良かったと思う。
 
 佐藤 次郎 14:21
@@ -179,13 +181,18 @@
 山田 太郎 14:22
 チーム
 #3 次のディフェンス、もっとラインを押し上げたい。</pre>
-            <b>出力例：</b>
-            <pre style="background-color: rgba(0,0,0,0.3); padding: 10px; border-radius: 5px; white-space: pre-wrap;">＃1
+
+        <b>出力例：</b>
+        <pre style="background-color: #f8f9fa; padding: 10px; border-radius: 5px; white-space: pre-wrap; border: 1px solid #dddddd; margin-top: 0.5rem; margin-bottom: 1.5rem;">＃1
 山田 太郎：今のプレー、良かったと思う。
 佐藤 次郎：ナイスラン！中央突破が効いてた。
 
 ＃3
 山田 太郎：（TEAM）次のディフェンス、もっとラインを押し上げたい。</pre>
+
+        <p class="description" style="border-left-color: #f39c12; background-color: #fef9e7; color: #c24914;">
+            <b><i class="fas fa-exclamation-triangle"></i> 注意点</b><br>
+            ＃の上の行にある文字列が名前と認識されるので＃の上には、TEAM、TEMPO、2min以外の文字は入れないでください。
         </p>
         <textarea id="inputRawText" placeholder="ここに生のテキストを貼り付けてください..."></textarea>
         <button id="processButton"><i class="fas fa-cogs"></i> 整理を実行</button>
