@@ -3,28 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>テキスト整理ツール</title>
+    <title>セルフレビュー整理ツール</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary-color: #00aeff;
-            --secondary-color: #00ffc3;
-            --dark-bg: #10121a;
-            --text-color: #e0e0e0;
-            --card-bg: rgba(22, 26, 40, 0.75);
-            --border-color: rgba(0, 174, 255, 0.3);
+            --primary-color: #3498db; /* Pop Blue */
+            --secondary-color: #2ecc71; /* Pop Green */
+            --bg-color: #f4f7f6; /* Light Grayish Blue */
+            --text-color: #333333; /* Dark Gray */
+            --container-bg: #ffffff; /* White */
+            --border-color: #dddddd; /* Light Gray */
+            --shadow-color: rgba(0, 0, 0, 0.1);
         }
 
         body {
             font-family: 'Noto Sans JP', sans-serif;
-            background-color: var(--dark-bg);
-            background-image: url('https://images.unsplash.com/photo-1546519638-68e109498ffc?q=80&w=2070&auto=format&fit=crop');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
+            background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
             padding: 2rem;
@@ -32,44 +29,33 @@
             justify-content: center;
             align-items: flex-start;
             min-height: 100vh;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(16, 18, 26, 0.7);
-            z-index: -1;
+            box-sizing: border-box;
         }
 
         .container {
             width: 100%;
             max-width: 900px;
-            background: rgba(22, 26, 40, 0.5);
+            background: var(--container-bg);
             padding: 2.5rem 3rem;
             border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 4px 20px var(--shadow-color);
             border: 1px solid var(--border-color);
             transition: all 0.3s ease;
         }
 
         .container:hover {
-            box-shadow: 0 0 40px rgba(0, 174, 255, 0.3);
+            box-shadow: 0 8px 30px rgba(52, 152, 219, 0.2);
         }
 
         h1 {
             text-align: center;
-            color: #ffffff;
+            color: var(--text-color);
             font-weight: 700;
             margin-bottom: 2.5rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            text-shadow: 0 0 10px var(--primary-color), 0 0 20px rgba(0, 174, 255, 0.5);
+            text-shadow: none;
         }
 
         h1 i {
@@ -86,31 +72,42 @@
             font-size: 16px;
             box-sizing: border-box;
             resize: vertical;
-            background-color: rgba(16, 18, 26, 0.8);
+            background-color: #fdfdfd;
             color: var(--text-color);
             transition: border-color 0.3s, box-shadow 0.3s;
         }
 
         textarea:focus {
             outline: none;
-            border-color: var(--secondary-color);
-            box-shadow: 0 0 0 3px rgba(0, 255, 195, 0.2);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
         }
 
-        #inputRawText, #inputPreProcessedText, #inputText {
-            height: 120px;
+        #inputRawText {
+            height: 150px;
             margin-bottom: 1rem;
         }
+
+        .hero-image {
+            width: 100%;
+            height: 150px; /* Reduced height */
+            object-fit: contain;
+            border-radius: 16px;
+            margin-bottom: 1.5rem; /* Adjusted margin */
+            box-shadow: 0 4px 20px var(--shadow-color);
+        }
+
+        
 
         #outputText {
             height: 280px;
             cursor: pointer;
-            background-color: rgba(16, 18, 26, 0.9);
+            background-color: #f8f9fa;
             transition: background-color 0.3s;
         }
 
         #outputText:hover {
-            background-color: rgba(30, 34, 50, 0.9);
+            background-color: #f1f3f5;
         }
 
         button {
@@ -122,19 +119,20 @@
             font-size: 18px;
             font-weight: 500;
             color: #ffffff;
-            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            background: var(--primary-color);
             border: none;
             border-radius: 8px;
             cursor: pointer;
             margin-bottom: 2rem;
             transition: all 0.3s ease;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.2);
-            box-shadow: 0 4px 15px rgba(0, 174, 255, 0.2), 0 2px 5px rgba(0, 255, 195, 0.1);
+            text-shadow: none;
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
         }
 
         button:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 8px 25px rgba(0, 174, 255, 0.4), 0 4px 10px rgba(0, 255, 195, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(52, 152, 219, 0.4);
+            background: #2980b9;
         }
 
         button i {
@@ -145,77 +143,78 @@
             display: block;
             margin-bottom: 0.8rem;
             font-weight: 500;
-            color: #ffffff;
+            color: var(--text-color);
             font-size: 1.1rem;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+            text-shadow: none;
         }
 
         .description {
             font-size: 0.95rem;
-            color: var(--text-color);
-            background-color: rgba(0,0,0,0.2);
+            color: #555;
+            background-color: #eaf2f8;
             padding: 1rem;
             border-radius: 8px;
             margin-bottom: 1.5rem;
             line-height: 1.7;
-            border-left: 4px solid var(--secondary-color);
+            border-left: 4px solid var(--primary-color);
         }
     </style>
 </head>
 <body>
-
     <div class="container">
-        <h1><i class="fas fa-football-ball"></i>テキスト整理ツール</h1>
+        <img src="Panthers%2070th%20logo.avif" alt="Team Logo" class="hero-image">
+        <h1><i class="fas fa-football-ball"></i>セルフレビュー整理ツール</h1>
 
-        <label for="inputRawText"><i class="fas fa-stream"></i> （1段階目）生のテキスト入力</label>
+        <label for="inputRawText"><i class="fas fa-stream"></i> レビューテキスト入力</label>
         <p class="description">
-            生のテキストから必要な情報（主に人の名前と#番号付きのコメント）を抽出します。<br>
-            具体的には、タイムスタンプや「編集済み」といった不要な文字列を削除し、<br>
-            発言者名と「#番号」で始まるコメント部分を抜き出す処理を行います。
+            Slackなどからコピーした生のレビューテキストを貼り付けて「整理を実行」ボタンを押してください。<br>
+            タイムスタンプ等の不要な情報を削除し、キーワード（チーム、テンポ等）を正規化し、#番号ごとにコメントをグループ化して出力します。<br>
+            <b>入力例：</b>
+            <pre style="background-color: rgba(0,0,0,0.3); padding: 10px; border-radius: 5px; white-space: pre-wrap;">山田 太郎 14:20
+#1 今のプレー、良かったと思う。
+
+佐藤 次郎 14:21
+#1 ナイスラン！中央突破が効いてた。
+
+山田 太郎 14:22
+チーム
+#3 次のディフェンス、もっとラインを押し上げたい。</pre>
+            <b>出力例：</b>
+            <pre style="background-color: rgba(0,0,0,0.3); padding: 10px; border-radius: 5px; white-space: pre-wrap;">＃1
+山田 太郎：今のプレー、良かったと思う。
+佐藤 次郎：ナイスラン！中央突破が効いてた。
+
+＃3
+山田 太郎：（TEAM）次のディフェンス、もっとラインを押し上げたい。</pre>
         </p>
         <textarea id="inputRawText" placeholder="ここに生のテキストを貼り付けてください..."></textarea>
-        <button id="processStage1Button"><i class="fas fa-cogs"></i> 1段階目の整理を実行</button>
+        <button id="processButton"><i class="fas fa-cogs"></i> 整理を実行</button>
 
-        <label for="inputPreProcessedText"><i class="fas fa-filter"></i> （2段階目）中間処理済みテキスト</label>
-        <p class="description">
-            第1段階で抽出されたテキストに対して、特定のキーワード（チーム、テンポなど）を正規化し、<br>
-            それらを関連するコメントの先頭に付与します。<br>
-            例えば、「チーム」という発言の後に続くコメントには、接頭辞として「（TEAM）」が追加されます。
-        </p>
-        <textarea id="inputPreProcessedText" readonly placeholder="1段階目の結果がここに表示されます..."></textarea>
-        <button id="processStage2Button"><i class="fas fa-random"></i> 2段階目の整理を実行</button>
-
-        <label for="inputText"><i class="fas fa-align-left"></i> （3段階目）最終入力</label>
-        <p class="description">
-            第2段階で整理されたテキストを最終的に整形します。<br>
-            #番号ごとにコメントをグループ化し、各コメントに発言者名を紐付けます。<br>
-            これにより、「誰が」「どの番号に対して」「どのようなコメントをしたか」が明確に分かる形式にまとめられます。
-        </p>
-        <textarea id="inputText" readonly placeholder="2段階目の結果がここに表示されます..."></textarea>
-        <button id="processStage3Button"><i class="fas fa-check-circle"></i> 3段階目の整理を実行</button>
-
-        <label for="outputText"><i class="fas fa-copy"></i> 出力（クリックしてコピー）</label>
+        <label for="outputText"><i class="fas fa-copy"></i> 出力結果（クリックしてコピー）</label>
         <textarea id="outputText" readonly placeholder="整理されたテキストがここに表示されます..."></textarea>
+        
     </div>
 
     <script>
-        document.getElementById('processStage1Button').addEventListener('click', processStage1);
-        document.getElementById('processStage2Button').addEventListener('click', processStage2);
-        document.getElementById('processStage3Button').addEventListener('click', processStage3);
+        document.getElementById('processButton').addEventListener('click', processAllStages);
         document.getElementById('outputText').addEventListener('click', (e) => {
             e.target.select();
             document.execCommand('copy');
             alert('出力結果をコピーしました。');
         });
 
+        function processAllStages() {
+            const inputRawText = document.getElementById('inputRawText').value;
+            const stage1Result = processStage1(inputRawText);
+            const stage2Result = processStage2(stage1Result);
+            const stage3Result = processStage3(stage2Result);
+            document.getElementById('outputText').value = stage3Result;
+        }
+
         // ==============================
         // 第1段階の整理ロジック
-        // 目的: 生のテキストから必要な情報（主に人の名前と#番号付きのコメント）を抽出します。
-        // 具体的には、タイムスタンプや「編集済み」といった不要な文字列を削除し、
-        // 発言者名と「#番号」で始まるコメント部分を抜き出す処理を行います。
         // ==============================
-        function processStage1() {
-            const inputRawText = document.getElementById('inputRawText').value;
+        function processStage1(inputRawText) {
             const lines = inputRawText.split('\n');
             let outputLines = [];
 
@@ -225,31 +224,13 @@
                 const trimmedLine = line.trim();
                 if (!trimmedLine) return;
 
-                // 1. #番号を含む行の処理
                 const commentMatch = trimmedLine.match(/^(.*?)(#\d+\s*.+)$/);
                 if (commentMatch) {
-                    // #番号の前の部分（名前など）を抽出
                     let preCommentPart = commentMatch[1].trim();
-                    // #番号以降の部分（コメント本文）を抽出
                     let commentPart = commentMatch[2].trim();
-
-                    // コメント本文に保持したいキーワードが含まれているかチェック
-                    // 例: "#1 ラッドキラーします、ラベンダーミスりました" -> これ全体は残したい
-                    // 例: "うんこ #1 ラッドキラーします" -> "うんこ"は削除、"#1 ラッドキラーします"は残す
-                    // ただし、今回は「コメント部分」にキーワードがあれば残すなので、ここでは `retainedWordsRegex` を使わない
-
-                    // 前の行が名前だった場合でも、#コメント行はそのまま残したい。
-                    // 名前らしき文字列であればそのままとする
-                    // 特定のパターン（タイムスタンプなど）だけを削除する
-                    // formatName関数を流用して、余分な情報を削除
                     preCommentPart = formatNameStage1(preCommentPart);
-
-                    // #コメントはそのまま残す
                     outputLines.push(preCommentPart + commentPart);
-
                 } else {
-                    // 2. #番号を含まない行の処理
-                    // 人の名前または保持したいキーワードのみを残す
                     const potentialName = formatNameStage1(trimmedLine);
                     const retainedWordMatch = trimmedLine.match(retainedWordsRegex);
 
@@ -258,24 +239,17 @@
                     } else if (retainedWordMatch) {
                         outputLines.push(retainedWordMatch[0]);
                     }
-                    // その他の行は削除（スキップ）
                 }
             });
 
-            document.getElementById('inputPreProcessedText').value = outputLines.filter(Boolean).join('\n');
-            document.getElementById('outputText').value = '';
+            return outputLines.filter(Boolean).join('\n');
         }
 
-        // Stage 1 専用のformatName関数
-        // 主にタイムスタンプや不要なアーティファクトを削除し、名前またはそのままのテキストを返す
         function formatNameStage1(rawText) {
             let text = rawText.trim();
-
             if (text.startsWith('#') || text.includes('（編集済み）') || text.includes('件の返信') || text.includes('スレッドを表示する') || /^\d{1,2}:\d{2}$/.test(text) || /^\d{1,2}\/\d{1,2}$/.test(text)) {
                 return '';
             }
-
-            // より積極的なタイムスタンプやSlack関連の文字の削除
             text = text.replace(/\s*\(\d{1,2}:\d{2}\).*$/, '');
             text = text.replace(/\s+\d{1,2}:\d{2}(?:\s+\d{1,2}\/\d{1,2})?.*$/, '');
             text = text.replace(/\s+\d{1,2}\/\d{1,2}\s+\d{1,2}:\d{2}.*$/, '');
@@ -286,47 +260,33 @@
             text = text.replace(/:\w+:/g, '');
             text = text.replace(/\s+\d+$/, '');
             text = text.replace(/^New\s+/, '');
-
             text = text.trim();
-
-            // 残すべきキーワードはここで確認しない。
-            // 人の名前らしきもの、またはコメント前の文字列なら残す。
-            // 日本語の名前や英数字を含む文字列であれば残す
             if (text && !/^[0-9\s\/:.,!@#$%^&*()_=\[\]{};'"\\|,.<>/?`~]+$/.test(text)) {
                 return text;
             }
-
             return '';
         }
 
-
         // ==============================
         // 第2段階の整理ロジック
-        // 目的: 第1段階で抽出されたテキストに対して、特定のキーワード（チーム、テンポなど）を正規化し、
-        // それらを関連するコメントの先頭に付与します。
-        // 例えば、「チーム」という発言の後に続くコメントには、接頭辞として「（TEAM）」が追加されます。
         // ==============================
-        function processStage2() {
-            const inputPreProcessedText = document.getElementById('inputPreProcessedText').value;
+        function processStage2(inputPreProcessedText) {
             const lines = inputPreProcessedText.split('\n');
             let outputLines = [];
-
             const specialWords = ['チーム', 'TEAM', 'テンポ', 'TEMPO', '2min', 'ツーミニ'];
-            let currentPrefix = ''; // 特殊なキーワードを保持する変数
+            let currentPrefix = '';
 
             lines.forEach(line => {
                 const trimmedLine = line.trim();
                 if (!trimmedLine) {
-                    outputLines.push(''); // 空行はそのまま保持
+                    outputLines.push('');
                     return;
                 }
 
-                // 行頭が # の場合
                 if (trimmedLine.startsWith('#')) {
                     if (currentPrefix) {
                         const match = trimmedLine.match(/^(#\d+)\s*(.*)$/);
                         if (match) {
-                            // 修正点: currentPrefixをそのまま使う
                             outputLines.push(`${match[1]}（${currentPrefix}）${match[2].trim()}`);
                         } else {
                             outputLines.push(`（${currentPrefix}）${trimmedLine}`);
@@ -335,51 +295,32 @@
                         outputLines.push(trimmedLine);
                     }
                 } else {
-                    // 行頭が # ではない場合
                     const foundSpecialWord = specialWords.find(word => trimmedLine.includes(word));
                     if (foundSpecialWord) {
-                        // ここから修正点: キーワードを統一形式に変換
-                        let convertedWord = foundSpecialWord;
-                        if (convertedWord === 'チーム' || convertedWord === 'team') {
-                            convertedWord = 'TEAM';
-                        } else if (convertedWord === 'ツーミニ' || convertedWord === '2min') {
-                            convertedWord = '2MIN';
-                        }
-                        // 'テンポ'と'TEMPO'は既に指定のspecialWordsに含まれるため、ここでは変換不要
-
-                        currentPrefix = convertedWord; // 変換後のキーワードを更新
-                        // キーワード自体は出力しない（次のコメント行で利用するため）
+                        let convertedWord = foundSpecialWord.toUpperCase();
+                        if (convertedWord === 'ツーミニ') convertedWord = '2MIN';
+                        currentPrefix = convertedWord;
                     } else {
-                        // 特殊なキーワードが見つからない場合、その行をそのまま出力
                         outputLines.push(trimmedLine);
-                        currentPrefix = ''; // キーワードをリセット
+                        currentPrefix = '';
                     }
                 }
             });
-
-            document.getElementById('inputText').value = outputLines.join('\n');
-            document.getElementById('outputText').value = ''; // 最終出力欄をクリア
+            return outputLines.join('\n');
         }
 
         // ==============================
-        // 第3段階の整理ロジック (既存の organizeText をリネーム)
-        // 目的: 第2段階で整理されたテキストを最終的に整形します。
-        // #番号ごとにコメントをグループ化し、各コメントに発言者名を紐付けます。
-        // これにより、「誰が」「どの番号に対して」「どのようなコメントをしたか」が明確に分かる形式にまとめられます。
+        // 第3段階の整理ロジック
         // ==============================
-        function processStage3() {
-            const inputText = document.getElementById('inputText').value;
+        function processStage3(inputText) {
             const lines = inputText.split('\n');
             const commentsByNumber = {};
             let currentName = '';
 
             lines.forEach(line => {
                 const trimmedLine = line.trim();
-                if (!trimmedLine || trimmedLine.includes('（編集済み）') || trimmedLine.includes('件の返信') || trimmedLine.includes('スレッドを表示する')) {
-                    return;
-                }
+                if (!trimmedLine) return;
 
-                // Attempt to extract comments first
                 const commentRegex = /#(\d+)\s*(.*?)(?=#|$)/g;
                 let commentMatch;
                 let commentsFoundInThisLine = [];
@@ -390,18 +331,13 @@
                     });
                 }
 
-                // If no comments are found in this line, it's a potential name update.
                 if (commentsFoundInThisLine.length === 0) {
-                    // 2段階目で追加された接頭辞があれば取り除く
                     const cleanedLine = trimmedLine.replace(/^\s*（[^）]+）/, '').trim();
                     const potentialName = formatName(cleanedLine);
                     if (potentialName) {
                         currentName = potentialName;
                     }
                 } else {
-                    // If comments are found, use the currentName for them.
-                    // Also, check if there's a name before the first comment in this line.
-                    // 2段階目で追加された接頭辞があれば取り除く
                     const firstCommentIndex = trimmedLine.indexOf('#' + commentsFoundInThisLine[0].number);
                     if (firstCommentIndex > 0) {
                         const textBeforeFirstComment = trimmedLine.substring(0, firstCommentIndex).trim();
@@ -413,7 +349,6 @@
                     }
                 }
 
-                // Add the extracted comments with the currentName
                 commentsFoundInThisLine.forEach(comment => {
                     if (comment.text) {
                         if (!commentsByNumber[comment.number]) {
@@ -427,7 +362,6 @@
                 });
             });
 
-            // 結果を整形して出力
             const sortedKeys = Object.keys(commentsByNumber).sort((a, b) => a - b);
             let outputText = '';
             sortedKeys.forEach((key, index) => {
@@ -436,23 +370,16 @@
                 }
                 outputText += `＃${key}\n`;
                 commentsByNumber[key].forEach(entry => {
-                    // Ensure displayName is not empty before adding to output
                     const displayName = entry.name ? entry.name : '不明な名前';
                     outputText += `${displayName}：${entry.text}\n`;
                 });
             });
-
-            document.getElementById('outputText').value = outputText;
+            return outputText;
         }
 
-        // 既存のformatName関数 (これはstage3で使われるため、変更なし)
         function formatName(rawName) {
             let name = rawName.trim();
-
-            if (name.startsWith('#')) {
-                return '';
-            }
-
+            if (name.startsWith('#')) return '';
             name = name.replace(/^New\s+/, '');
             name = name.replace(/\s+\d{1,2}:\d{2}(?:\s+\d{1,2}\/\d{1,2})?.*$/, '');
             name = name.replace(/\s+\d{1,2}\/\d{1,2}\s+\d{1,2}:\d{2}.*$/, '');
@@ -462,17 +389,13 @@
             name = name.replace(/\s*スレッドを表示する.*$/, '');
             name = name.replace(/:\w+:/g, '');
             name = name.replace(/\s+\d+$/, '');
-
             name = name.trim();
-
             if (!name || /^[0-9\s\/:.,!@#$%^&*()_=\[\]{};'"\\|,.<>/?`~]+$/.test(name) || /^\d{1,2}:\d{2}$/.test(name) || /^\d{1,2}\/\d{1,2}$/.test(name)) {
                 return '';
             }
-
-            if (name === 'チーム' || name === 'テンポ' || name === '2min' || name === 'ツーミニ' || name === 'TEAM' || name === 'TEMPO') {
+            if (['チーム', 'テンポ', '2min', 'ツーミニ', 'TEAM', 'TEMPO'].includes(name)) {
                 return name;
             }
-
             const japaneseNameMatch = name.match(/^[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF\s]+/);
             if (japaneseNameMatch && japaneseNameMatch[0].trim().length > 0) {
                 let extractedName = japaneseNameMatch[0].trim();
@@ -484,7 +407,6 @@
                 }
                 return extractedName;
             }
-
             return name;
         }
     </script>
