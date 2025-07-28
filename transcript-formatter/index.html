@@ -47,6 +47,7 @@
         <div id="output" onclick="copyOutput()"></div>
     </div>
     <button onclick="formatTranscript()">整形する</button>
+    <button onclick="downloadTxtFile()">TXTファイルとしてダウンロード</button>
     <div id="copy-notification" style="position: fixed; bottom: 20px; right: 20px; background-color: #333; color: white; padding: 10px; border-radius: 5px; display: none;">コピーしました！</div>
 
 <script>
@@ -142,6 +143,25 @@
             reader.readAsText(file);
         }
     });
+
+    function downloadTxtFile() {
+        const outputElement = document.getElementById('output');
+        const textToSave = outputElement.innerText;
+
+        if (!textToSave) {
+            alert('出力テキストがありません。');
+            return;
+        }
+
+        const blob = new Blob([textToSave], { type: 'text/plain;charset=utf-8' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'formatted_transcript.txt';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(a.href);
+    }
 
 </script>
 
