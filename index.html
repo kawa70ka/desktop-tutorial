@@ -99,14 +99,14 @@
 
         
 
-        #outputText {
+        #outputText, #outputSortedText {
             height: 280px;
             cursor: pointer;
             background-color: #f8f9fa;
             transition: background-color 0.3s;
         }
 
-        #outputText:hover {
+        #outputText:hover, #outputSortedText:hover {
             background-color: #f1f3f5;
         }
 
@@ -200,14 +200,25 @@
         <label for="outputText"><i class="fas fa-copy"></i> 出力結果（クリックしてコピー）</label>
         <textarea id="outputText" readonly placeholder="整理されたテキストがここに表示されます..."></textarea>
         
+        <label for="outputSortedText" style="margin-top: 2rem;"><i class="fas fa-sort-amount-down"></i> ソートされた出力結果（クリックしてコピー）</label>
+        <textarea id="outputSortedText" readonly placeholder="ソートされたテキストがここに表示されます..."></textarea>
     </div>
 
     <script>
         document.getElementById('processButton').addEventListener('click', processAllStages);
+        
         document.getElementById('outputText').addEventListener('click', (e) => {
+            if(!e.target.value) return;
             e.target.select();
             document.execCommand('copy');
             alert('出力結果をコピーしました。');
+        });
+
+        document.getElementById('outputSortedText').addEventListener('click', (e) => {
+            if(!e.target.value) return;
+            e.target.select();
+            document.execCommand('copy');
+            alert('ソートされた出力結果をコピーしました。');
         });
 
         function processAllStages() {
@@ -216,7 +227,117 @@
             const stage2Result = processStage2(stage1Result);
             const stage3Result = processStage3(stage2Result);
             document.getElementById('outputText').value = stage3Result;
+
+            const sortedResult = processAndSortOutput(stage3Result);
+            document.getElementById('outputSortedText').value = sortedResult;
         }
+
+        // ==============================
+        // 新しいソート処理
+        // ==============================
+        function processAndSortOutput(inputText) {
+            if (!inputText.trim()) {
+                return "";
+            }
+
+            // 1. `outputText` の内容を解析し、個別のコメントオブジェクトの配列を作成する
+            const lines = inputText.trim().split('\n');
+            const parsedComments = [];
+            let currentNumber = -1;
+
+            lines.forEach(line => {
+                const trimmedLine = line.trim();
+                if (!trimmedLine) return;
+
+                const numberMatch = trimmedLine.match(/^＃(\d+)/);
+                if (numberMatch) {
+                    currentNumber = parseInt(numberMatch[1], 10);
+                } else {
+                    const commentMatch = trimmedLine.match(/^(.*?)[：](.*)$/); // 全角コロンで分割
+                    if (commentMatch && currentNumber !== -1) {
+                        parsedComments.push({
+                            number: currentNumber,
+                            name: commentMatch[1].trim(),
+                            textWithTag: commentMatch[2].trim()
+                        });
+                    }
+                }
+            });
+
+            // 2. 各コメントをカテゴリ分けし、タグを削除したテキストを作成する
+            const categoryKeywords = {
+                TEAM: ['（TEAM）', '（チーム）'],
+                'ツーミニ': ['（2MIN）', '（ツーミニ）', '（ツーミニッツ）'],
+                'テンポ': ['（TEMPO）', '（テンポ）']
+            };
+
+            const categorizedComments = parsedComments.map(comment => {
+                let assignedCategory = 'TEAM'; // デフォルトカテゴリ
+                let found = false;
+
+                for (const [category, keywords] of Object.entries(categoryKeywords)) {
+                    for (const keyword of keywords) {
+                        if (comment.textWithTag.includes(keyword)) {
+                            assignedCategory = category;
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (found) break;
+                }
+                
+                const cleanedText = comment.textWithTag.replace(/（(TEAM|チーム|2MIN|ツーミニ|ツーミニッツ|TEMPO|テンポ)）/g, '').trim();
+
+                return { ...comment, category: assignedCategory, text: cleanedText };
+            });
+
+            // 3. コメントをカテゴリごとにグループ化する
+            const commentsByCategory = {
+                TEAM: [],
+                'ツーミニ': [],
+                'テンポ': []
+            };
+            categorizedComments.forEach(c => {
+                if (commentsByCategory[c.category]) {
+                    commentsByCategory[c.category].push(c);
+                }
+            });
+
+            // 4. 最終的な出力文字列を生成する
+            let outputText = '';
+            const categoryOrder = ['TEAM', 'ツーミニ', 'テンポ'];
+
+            categoryOrder.forEach(categoryName => {
+                const categoryComments = commentsByCategory[categoryName];
+                if (!categoryComments || categoryComments.length === 0) return;
+
+                outputText += `--- ${categoryName} ---\n\n`;
+
+                // カテゴリ内でコメントを番号ごとにグループ化
+                const commentsByNumber = {};
+                categoryComments.forEach(c => {
+                    if (!commentsByNumber[c.number]) {
+                        commentsByNumber[c.number] = [];
+                    }
+                    commentsByNumber[c.number].push(c);
+                });
+
+                // 番号でソートして整形
+                const sortedKeys = Object.keys(commentsByNumber).sort((a, b) => a - b);
+                
+                const formattedBlocks = sortedKeys.map(key => {
+                    let blockText = `＃${key}\n`;
+                    blockText += commentsByNumber[key].map(entry => `${entry.name}：${entry.text}`).join('\n');
+                    return blockText;
+                });
+
+                outputText += formattedBlocks.join('\n\n');
+                outputText += '\n\n';
+            });
+
+            return outputText.trim();
+        }
+
 
         // ==============================
         // 第1段階の整理ロジック
@@ -280,8 +401,14 @@
         function processStage2(inputPreProcessedText) {
             const lines = inputPreProcessedText.split('\n');
             let outputLines = [];
-            const specialWords = ['チーム', 'TEAM', 'テンポ', 'TEMPO', '2min', 'ツーミニ'];
-            let currentPrefix = '';
+            const specialWords = ['チーム', 'TEAM', 'テンポ', 'TEMPO', '2min', 'ツーミニ', 'ツーミニッツ'];
+            const wordToPrefix = {
+                'チーム': 'TEAM', 'team': 'TEAM',
+                'テンポ': 'TEMPO', 'tempo': 'TEMPO',
+                '2min': '2MIN', 'ツーミニ': '2MIN', 'ツーミニッツ': '2MIN'
+            };
+
+            let currentPrefix = ''; // Holds the state for the current person
 
             lines.forEach(line => {
                 const trimmedLine = line.trim();
@@ -290,27 +417,27 @@
                     return;
                 }
 
+                // Is it a keyword?
+                const foundSpecialWord = specialWords.find(word => trimmedLine.toLowerCase() === word.toLowerCase());
+                if (foundSpecialWord) {
+                    currentPrefix = wordToPrefix[foundSpecialWord.toLowerCase()];
+                    // Don't add the keyword line itself to the output
+                    return;
+                }
+
+                // Is it a comment?
                 if (trimmedLine.startsWith('#')) {
-                    if (currentPrefix) {
-                        const match = trimmedLine.match(/^(#\d+)\s*(.*)$/);
-                        if (match) {
-                            outputLines.push(`${match[1]}（${currentPrefix}）${match[2].trim()}`);
-                        } else {
-                            outputLines.push(`（${currentPrefix}）${trimmedLine}`);
-                        }
+                    const prefixToUse = currentPrefix || 'TEAM'; // Default to TEAM
+                    const match = trimmedLine.match(/^(#\d+)\s*(.*)$/);
+                    if (match) {
+                        outputLines.push(`${match[1]}（${prefixToUse}）${match[2].trim()}`);
                     } else {
-                        outputLines.push(trimmedLine);
+                        outputLines.push(`（${prefixToUse}）${trimmedLine}`);
                     }
                 } else {
-                    const foundSpecialWord = specialWords.find(word => trimmedLine.includes(word));
-                    if (foundSpecialWord) {
-                        let convertedWord = foundSpecialWord.toUpperCase();
-                        if (convertedWord === 'ツーミニ') convertedWord = '2MIN';
-                        currentPrefix = convertedWord;
-                    } else {
-                        outputLines.push(trimmedLine);
-                        currentPrefix = '';
-                    }
+                    // It's a name. Push it and reset the context for the next block of comments.
+                    outputLines.push(trimmedLine);
+                    currentPrefix = '';
                 }
             });
             return outputLines.join('\n');
@@ -373,7 +500,7 @@
             let outputText = '';
             sortedKeys.forEach((key, index) => {
                 if (index > 0) {
-                    outputText += '\n';
+                    outputText += '\n\n';
                 }
                 outputText += `＃${key}\n`;
                 commentsByNumber[key].forEach(entry => {
@@ -381,7 +508,7 @@
                     outputText += `${displayName}：${entry.text}\n`;
                 });
             });
-            return outputText;
+            return outputText.trim();
         }
 
         function formatName(rawName) {
